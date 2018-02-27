@@ -46,7 +46,7 @@ router.post('/login', function(req, res, next){
 });
 
 router.get('/user', auth.optional, function(req, res, next){
-  console.log('req', req.payload)
+  // console.log('req', req.payload)
   User.findById(req.payload.id).then(function(user){
     if(!user){ return res.sendStatus(401); }
 
