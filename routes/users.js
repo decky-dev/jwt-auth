@@ -14,6 +14,8 @@ router.post('/register', function(req, res, next){
 
   var user = new User();
 
+  user.local.name = req.body.user.username;
+  
   user.local.email = req.body.user.email;
 
   user.local.password = user.setPassword(req.body.user.password)
@@ -38,7 +40,7 @@ router.post('/login', function(req, res, next){
 
     if(user){
       // user.token = user.generateJWT();
-      return res.json({user: user.toAuthJSON()});
+      return res.json({user: user.generateJWT('local')});
     } else {
       return res.status(422).json(info);
     }
@@ -50,8 +52,29 @@ router.get('/user', auth.optional, function(req, res, next){
   User.findById(req.payload.id).then(function(user){
     if(!user){ return res.sendStatus(401); }
 
-    return res.json({user: user.toAuthJSON()});
+    // return res.json({user: user.toAuthJSON()});
+    return res.json({user: user.generateJWT('local')});
   }).catch(next);
+});
+
+
+router.get('/auth/google', 
+  passport.authenticate('google', { scope: ['profile', 'email']}));
+
+router.get('/auth/google/callback', function(req, res, next) {
+  passport.authenticate('google', {session: false}, function(err, user, info) {
+    if(err){ return next(err); }
+
+    if(user){
+      // user.token = user.generateJWT();
+      // return res.json({user: user.toAuthJSON()});
+      res.redirect('http://localhost:3001/pages/auth/login?token='+user.generateJWT('google'));
+      // return res.json({user: user.generateJWT('google')});
+    } else {
+      return res.status(422).json(info);
+    }
+
+  })(req, res, next);
 });
 
 module.exports = router;

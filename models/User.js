@@ -5,9 +5,17 @@ var jwt = require('jsonwebtoken');
 
 var UserSchema = new mongoose.Schema({
 	local: {
-		email: {type: String, lowercase: true, unique: true, required: [true, "can't be blank"], match: [/\S+@\S+\.\S+/, 'is invalid'], index: true},
+    // email: {type: String, lowercase: true, unique: true, required: [true, "can't be blank"], match: [/\S+@\S+\.\S+/, 'is invalid'], index: true},
+		name: String,
+    email: {type: String, lowercase: true, unique: true, match: [/\S+@\S+\.\S+/, 'is invalid']},
 		password: String
-	}
+	},
+  google: {
+    id: String,
+    token: String,
+    name: String,
+    email: String
+  }
 }, {timestamps: true});
 
 // generating a hash
@@ -21,21 +29,21 @@ UserSchema.methods.validPassword = function(password) {
 };
 
 
-UserSchema.methods.generateJWT = function() {
+UserSchema.methods.generateJWT = function(loginType) {
   var today = new Date();
   var exp = new Date(today);
   exp.setDate(today.getDate() + 60);
 
   return jwt.sign({
     id: this._id,
-    email: this.local.email,
+    email: loginType === 'local' ? this.local.email : this.google.email,
     exp: parseInt(exp.getTime() / 1000),
   }, 'secret');
 };
 
 UserSchema.methods.toAuthJSON = function(){
   return {
-    email: this.local.email,
+    // email: this.local.email,
     token: this.generateJWT(),
   };
 };
