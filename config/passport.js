@@ -28,7 +28,7 @@ passport.use(new GoogleStrategy({
   callbackURL     : googleAuth.callbackURL,
 }, function(token, refreshToken, profile, done){
 	// console.log('token', token);
-	console.log('profile', profile);
+	// console.log('profile', profile);
 	process.nextTick(function() {
 		User.findOne( {'google.id': profile.id }, function(err, user) {
 			if(err)

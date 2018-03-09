@@ -7,7 +7,7 @@ var UserSchema = new mongoose.Schema({
 	local: {
     // email: {type: String, lowercase: true, unique: true, required: [true, "can't be blank"], match: [/\S+@\S+\.\S+/, 'is invalid'], index: true},
 		name: String,
-    email: {type: String, lowercase: true, unique: true, match: [/\S+@\S+\.\S+/, 'is invalid']},
+    email: {type: String, lowercase: true, match: [/\S+@\S+\.\S+/, 'is invalid']},
 		password: String
 	},
   google: {
@@ -36,7 +36,7 @@ UserSchema.methods.generateJWT = function(loginType) {
 
   return jwt.sign({
     id: this._id,
-    email: loginType === 'local' ? this.local.email : this.google.email,
+    email: loginType === 'google' ? this.google.email : this.local.email,
     exp: parseInt(exp.getTime() / 1000),
   }, 'secret');
 };

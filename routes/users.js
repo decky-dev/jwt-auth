@@ -12,6 +12,15 @@ router.post('/register', function(req, res, next){
     return res.status(400).json({message: 'Please fill out all fields'});
   }
 
+  User.findOne( { 'local.email': req.body.user.email }, function(err, user) {
+    // console.log('user', user);
+    if(err) { return next(err) };
+
+    if(user) {
+      return res.status(422).json({errors: {email: "alredy taken"}}); 
+    };
+  })
+
   var user = new User();
 
   user.local.name = req.body.user.username;
@@ -40,7 +49,7 @@ router.post('/login', function(req, res, next){
 
     if(user){
       // user.token = user.generateJWT();
-      return res.json({user: user.generateJWT('local')});
+      return res.json({user: user.toAuthJSON()});
     } else {
       return res.status(422).json(info);
     }
@@ -53,7 +62,7 @@ router.get('/user', auth.optional, function(req, res, next){
     if(!user){ return res.sendStatus(401); }
 
     // return res.json({user: user.toAuthJSON()});
-    return res.json({user: user.generateJWT('local')});
+    return res.json({user: user});
   }).catch(next);
 });
 
@@ -66,9 +75,11 @@ router.get('/auth/google/callback', function(req, res, next) {
     if(err){ return next(err); }
 
     if(user){
+      // console.log('google user', user);
       // user.token = user.generateJWT();
       // return res.json({user: user.toAuthJSON()});
       res.redirect('http://localhost:3001/pages/auth/login?token='+user.generateJWT('google'));
+      // res.redirect('http://localhost:3001/pages/auth/login?token='+user.google.token);
       // return res.json({user: user.generateJWT('google')});
     } else {
       return res.status(422).json(info);
